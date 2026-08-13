@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VidPulse Platform & Studio</title>
+  <style>
+    /* Reset & Theme Styles */
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', Arial, sans-serif; }
+    body { background-color: #0f0f0f; color: #f1f1f1; display: flex; flex-direction: column; min-height: 100vh; }
+    
+    /* Utilities */
+    .hidden { display: none !important; }
+    .btn { padding: 8px 16px; border-radius: 18px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    .btn-primary { background-color: #3ea6ff; color: #0f0f0f; }
+    .btn-primary:hover { background-color: #65b8ff; }
+    .btn-danger { background-color: #cc0000; color: white; }
+    .btn-dark { background-color: #272727; color: white; }
+    .btn-dark:hover { background-color: #3f3f3f; }
+    .btn-gold { background-color: #ffd700; color: #000; }
+
+    /* Modals */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+    .auth-box { background: #212121; padding: 28px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .auth-box h2 { margin-bottom: 8px; color: #ff0000; display: flex; align-items: center; gap: 8px; }
+    .auth-box p { color: #aaa; font-size: 13px; margin-bottom: 16px; }
+    .input-group { margin-bottom: 14px; }
+    .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
+    .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background: #121212; border: 1px solid #383838; border-radius: 6px; color: white; outline: none; }
+    .input-group input:focus { border-color: #3ea6ff; }
+    .error-msg { color: #ff4e4e; font-size: 12px; margin-top: 4px; }
+
+    /* Switcher List Style */
+    .switch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 250px; overflow-y: auto; }
+    .switch-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #171717; border: 1px solid #383838; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .switch-item:hover { background: #2a2a2a; border-color: #3ea6ff; }
+    .switch-item.active-ch { border-color: #ff0000; background: #221515; }
+
+    /* Player In-Video Admin Panel */
+    .player-admin-panel { background: #221a00; border: 1px solid #ffd700; padding: 12px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    /* App Header */
+    header { height: 56px; background: #212121; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid #383838; position: sticky; top: 0; z-index: 100; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 18px; cursor: pointer; }
+    .brand span { color: #ff0000; font-size: 22px; }
+    
+    /* Search Bar */
+    .search-container { display: flex; width: 35%; position: relative; }
+    .search-container input { width: 100%; padding: 8px 16px; background-color: #121212; border: 1px solid #303030; border-radius: 20px 0 0 20px; color: white; outline: none; }
+    .search-container button { padding: 8px 16px; background-color: #222222; border: 1px solid #303030; border-left: none; border-radius: 0 20px 20px 0; color: white; cursor: pointer; }
+
+    .user-profile { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #3ea6ff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
+    /* Studio Layout */
+    .studio-container { display: flex; flex: 1; min-height: calc(100vh - 56px); }
+    .sidebar { width: 220px; background: #1f1f1f; border-right: 1px solid #383838; padding-top: 12px; flex-shrink: 0; }
+    .sidebar-menu { list-style: none; }
+    .sidebar-item { padding: 12px 20px; display: flex; align-items: center; gap: 14px; color: #aaa; font-size: 13px; cursor: pointer; border-left: 4px solid transparent; }
+    .sidebar-item:hover, .sidebar-item.active { background: #272727; color: #fff; border-left-color: #ff0000; }
+
+    /* Main Content */
+    .main-content { flex: 1; padding: 24px; overflow-y: auto; background: #0f0f0f; }
+    .section-title { font-size: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Cards Grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+    .card { background: #212121; padding: 16px; border-radius: 8px; border: 1px solid #383838; }
+    .card h3 { font-size: 12px; color: #aaa; margin-bottom: 6px; text-transform: uppercase; }
+    .card .stat { font-size: 24px; font-weight: bold; margin-bottom: 2px; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; background: #212121; border-radius: 8px; overflow: hidden; margin-top: 8px; }
+    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #383838; font-size: 13px; }
+    th { background: #171717; color: #aaa; font-weight: normal; }
+
+    /* Video Grid */
+    .main-player-layout { display: flex; gap: 24px; }
+    .video-view-left { flex: 2; }
+    .video-view-right { flex: 1; min-width: 300px; }
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .video-card { background: #212121; border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; }
+    .video-card:hover { transform: translateY(-2px); }
+    .video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; object-fit: cover; }
+    .video-info { padding: 10px; }
+    .video-title-text { font-size: 13px; font-weight: bold; line-height: 1.3; margin-bottom: 4px; color: #fff; }
+    .video-meta { font-size: 11px; color: #aaa; }
+  </style>
+</head>
+<body>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div id="authModal" class="modal-overlay">
+    <div class="auth-box">
+      <h2>▶ Welcome to VidPulse</h2>
+      <p>Log in or Sign up to save your progress and access your channels.</p>
+      <form onsubmit="handleAuth(event)">
+        <div class="input-group">
+          <label>Email Address</label>
+          <input type="email" id="authEmail" required placeholder="name@domain.com">
+        </div>
+        <div class="input-group">
+          <label>Password</label>
+          <input type="password" id="authPass" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Log In / Register</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- CHANNEL CREATION MODAL -->
+  <div id="channelModal" class="modal-overlay hidden">
+    <div class="auth-box">
+      <h2>🎉 Create a VidPulse Channel</h2>
+      <p>Choose a unique channel name and handle.</p>
+      <form onsubmit="handleCreateChannel(event)">
+        <div class="input-group">
+          <label>Channel Name</label>
+          <input type="text" id="newChannelName" required placeholder="e.g. Keshav Decoded">
+        </div>
+        <div class="input-group">
+          <label>Unique Handle</label>
+          <input type="text" id="newChannelHandle" required placeholder="@KeshavDecoded">
+          <div id="handleError" class="error-msg hidden">That handle or channel name is already taken!</div>
+        </div>
+        <div class="input-group">
+          <label>Channel Description</label>
+          <textarea id="newChannelDesc" rows="2" placeholder="What is your channel about?"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Create Channel</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SWITCH ACCOUNTS / CHANNELS MODAL -->
+  <div id="switchModal" class="modal-overlay hidden">
+    <div class="auth-box">
+      <h2>🔄 Switch Channel / Account</h2>
+      <p>Select an existing channel or create a new one under your account:</p>
+      <div id="switchChannelList" class="switch-list"></div>
+      <div style="display:flex; gap:8px; margin-top:12px;">
+        <button type="button" class="btn btn-dark" style="flex:1;" onclick="logoutToAuth()">Log Out Account</button>
+        <button type="button" class="btn btn-dark" onclick="toggleModal('switchModal', false)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER ADMIN CONTROL PANEL MODAL -->
+  <div id="masterModal" class="modal-overlay hidden">
+    <div class="auth-box" style="max-width: 520px;">
+      <h2>👑 Master Admin Control Panel</h2>
+      <p>Control views, subscribers, and inspect any channel on the network.</p>
+      <div class="input-group">
+        <label>Select Target Channel</label>
+        <select id="masterTargetSelect" onchange="loadMasterChannelStats()"></select>
+      </div>
+      <div class="grid" style="margin-bottom: 12px;">
+        <div class="card">
+          <h3>Subscribers</h3>
+          <div class="stat" id="mStatSubs">0</div>
+        </div>
+        <div class="card">
+          <h3>Total Views</h3>
+          <div class="stat" id="mStatViews">0</div>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Add Subscribers</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="masterAddSubs" placeholder="e.g. 500" value="100">
+          <button type="button" class="btn btn-gold" onclick="masterInjectSubs()">Inject Subs</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <label>Add Views & Impressions</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="masterAddViews" placeholder="e.g. 1000" value="500">
+          <button type="button" class="btn btn-gold" onclick="masterInjectViews()">Inject Views</button>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 16px;">
+        <button type="button" class="btn btn-primary" style="flex:1;" onclick="masterInspectChannel()">Inspect Channel</button>
+        <button type="button" class="btn btn-dark" onclick="toggleModal('masterModal', false)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD MODAL -->
+  <div id="uploadModal" class="modal-overlay hidden">
+    <div class="auth-box" style="max-width: 480px;">
+      <h2>Upload Video</h2>
+      <form onsubmit="handleVideoUpload(event)">
+        <div class="input-group">
+          <label>Video Direct MP4 URL</label>
+          <input type="text" id="upUrl" placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" required>
+        </div>
+        <div class="input-group">
+          <label>Title</label>
+          <input type="text" id="upTitle" placeholder="Video Title" required>
+        </div>
+        <div class="input-group">
+          <label>Format</label>
+          <select id="upType">
+            <option value="video">Long-form Video</option>
+            <option value="short">Short (Vertical)</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Description</label>
+          <textarea id="upDesc" rows="2" placeholder="Video description..."></textarea>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">Publish Video</button>
+          <button type="button" class="btn btn-dark" onclick="toggleModal('uploadModal', false)">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <header>
+    <div class="brand" onclick="openVidPulseHome()">
+      <span>▶</span> VidPulse
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search videos...">
+      <button onclick="executeSearch()">🔍</button>
+    </div>
+
+    <div class="user-profile">
+      <button id="masterControlBtn" class="btn btn-gold hidden" onclick="openMasterPanel()">👑 Master Panel</button>
+      <button class="btn btn-primary" onclick="toggleModal('uploadModal', true)">➕ Create</button>
+      <button class="btn btn-dark" onclick="switchTab('dashboard')">VidPulse Studio</button>
+      <button class="btn btn-dark" onclick="openSwitchModal()">🔄 Switch Channel / Account</button>
+      <div class="avatar" id="headerAvatar">U</div>
+    </div>
+  </header>
+
+  <!-- WORKSPACE -->
+  <div class="studio-container">
+    <div class="sidebar">
+      <ul class="sidebar-menu">
+        <li class="sidebar-item" onclick="openVidPulseHome()">🏠 VidPulse Home</li>
+        <li class="sidebar-item active" onclick="switchTab('dashboard', this)">📊 Dashboard</li>
+        <li class="sidebar-item" onclick="switchTab('content', this)">📹 Content</li>
+        <li class="sidebar-item" onclick="switchTab('analytics', this)">📈 Analytics</li>
+        <li class="sidebar-item" onclick="switchTab('customization', this)">🎨 Customization</li>
+      </ul>
+    </div>
+
+    <div class="main-content">
+      <!-- HOME PAGE -->
+      <div id="sec-vpHome" class="studio-section">
+        <h2 style="margin-bottom: 12px;" id="homeHeading">Recommended Videos</h2>
+        <div class="video-grid" id="mainHomeGrid"></div>
+      </div>
+
+      <!-- PLAYER -->
+      <div id="sec-vpPlayer" class="studio-section hidden">
+        
+        <!-- Master In-Player Admin Injection Toolbar -->
+        <div id="inPlayerMasterPanel" class="player-admin-panel hidden">
+          <div>
+            <strong style="color:#ffd700; font-size:13px;">👑 Master Admin Video Controls:</strong>
+            <span style="font-size:12px; color:#ddd; margin-left:8px;">Inject stats for this video & channel</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="number" id="inPlayerAddViews" placeholder="Views" value="100" style="width:80px; padding:4px 8px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:12px;">
+            <button class="btn btn-gold" style="padding:4px 10px; font-size:11px;" onclick="injectInPlayerViews()">+ Add Views</button>
+            <input type="number" id="inPlayerAddSubs" placeholder="Subs" value="50" style="width:80px; padding:4px 8px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:12px;">
+            <button class="btn btn-gold" style="padding:4px 10px; font-size:11px;" onclick="injectInPlayerSubs()">+ Add Subs</button>
+          </div>
+        </div>
+
+        <div class="main-player-layout">
+          <div class="video-view-left">
+            <video id="activePlayer" controls autoplay style="width:100%; aspect-ratio:16/9; background:#000; border-radius:8px;"></video>
+            <h2 id="activeVidTitle" style="margin-top:12px;">Title</h2>
+            <p id="activeVidMeta" style="color:#aaa; font-size:13px; margin-top:4px;">0 views</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-bottom:1px solid #383838; padding-bottom:12px;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <div class="avatar" id="activeVidAvatar">C</div>
+                <div>
+                  <div style="font-weight:bold;" id="activeVidChannel">Channel Name</div>
+                  <div style="font-size:11px; color:#aaa;" id="activeVidSubCount">0 subscribers</div>
+                </div>
+                <button class="btn btn-primary" id="subBtn" onclick="toggleSubscribeActiveChannel()">Subscribe</button>
+              </div>
+              <div>
+                <button class="btn btn-dark" id="likeBtn" onclick="toggleLikeActiveVideo()">👍 <span id="likeCount">0</span></button>
+              </div>
+            </div>
+          </div>
+          <div class="video-view-right">
+            <h3>Up Next</h3>
+            <div id="relatedQueue" style="display:flex; flex-direction:column; gap:12px; margin-top:12px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div id="sec-dashboard" class="studio-section hidden">
+        <div class="section-title">Channel Dashboard</div>
+        <div class="grid">
+          <div class="card">
+            <h3>Subscribers</h3>
+            <div class="stat" id="dashSubs">0</div>
+          </div>
+          <div class="card">
+            <h3>Channel Views</h3>
+            <div class="stat" id="dashViews">0</div>
+          </div>
+          <div class="card">
+            <h3>Watch Time (Hours)</h3>
+            <div class="stat" id="dashWatchTime">0.0</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Latest Upload Performance</h3>
+          <p style="font-size:14px; margin-top:6px;" id="latestVidName">No videos published yet.</p>
+          <div style="display: flex; gap: 24px; font-size: 13px; margin-top: 10px; color: #aaa;">
+            <div>Views: <span style="color:white; font-weight:bold;" id="latestVidViews">0</span></div>
+            <div>Likes: <span style="color:white; font-weight:bold;" id="latestVidLikes">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTENT TABLE -->
+      <div id="sec-content" class="studio-section hidden">
+        <div class="section-title">
+          <span>Channel Uploads</span>
+          <button class="btn btn-primary" onclick="toggleModal('uploadModal', true)">Upload Video</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Video</th>
+              <th>Format</th>
+              <th>Views</th>
+              <th>Likes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="contentTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- ANALYTICS -->
+      <div id="sec-analytics" class="studio-section hidden">
+        <div class="section-title">Analytics Overview</div>
+        <div class="grid">
+          <div class="card">
+            <h3>Total Views</h3>
+            <div class="stat" id="anViews">0</div>
+          </div>
+          <div class="card">
+            <h3>Total Impressions</h3>
+            <div class="stat" id="anImpressions">0</div>
+          </div>
+          <div class="card">
+            <h3>Subscribers</h3>
+            <div class="stat" id="anSubs">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMIZATION -->
+      <div id="sec-customization" class="studio-section hidden">
+        <div class="section-title">Channel Customization</div>
+        <div class="card">
+          <form onsubmit="saveCustomization(event)">
+            <div class="input-group">
+              <label>Channel Name</label>
+              <input type="text" id="custName">
+            </div>
+            <div class="input-group">
+              <label>Handle</label>
+              <input type="text" id="custHandle">
+            </div>
+            <div class="input-group">
+              <label>Description</label>
+              <textarea id="custDesc" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Settings</button>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT MASTER LOGIC -->
+  <script>
+    const MASTER_EMAIL = "Keshav@gmail.com";
+    const MASTER_PASS = "123456789";
+
+    let accountsDB = JSON.parse(localStorage.getItem('vp_accounts')) || [
+      {
+        email: MASTER_EMAIL,
+        pass: MASTER_PASS,
+        isMaster: true,
+        channels: [
+          {
+            name: "Keshav Decoded",
+            handle: "@KeshavDecoded",
+            desc: "Official Master Control Channel",
+            subscribers: 0,
+            subscriptions: [],
+            videos: []
+          }
+        ],
+        activeChannelIndex: 0
+      }
+    ];
+
+    let platformVideos = JSON.parse(localStorage.getItem('vp_videos')) || [];
+    let activeVideo = null;
+    let currentUser = null;
+
+    function saveState() {
+      localStorage.setItem('vp_accounts', JSON.stringify(accountsDB));
+      localStorage.setItem('vp_videos', JSON.stringify(platformVideos));
+    }
+
+    // Auth Engine
+    function handleAuth(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const pass = document.getElementById('authPass').value.trim();
+
+      if (email.toLowerCase() === MASTER_EMAIL.toLowerCase()) {
+        if (pass !== MASTER_PASS) {
+          alert('Incorrect Master Admin password!');
+          return;
+        }
+      }
+
+      let acc = accountsDB.find(a => a.email.toLowerCase() === email.toLowerCase());
+
+      if (acc) {
+        if (acc.pass !== pass) {
+          alert('Incorrect password!');
+          return;
+        }
+        currentUser = acc;
+        toggleModal('authModal', false);
+        
+        if (!currentUser.channels || currentUser.channels.length === 0) {
+          currentUser.channels = [];
+          currentUser.activeChannelIndex = 0;
+          toggleModal('channelModal', true);
+        } else {
+          initSession();
+        }
+      } else {
+        currentUser = {
+          email: email,
+          pass: pass,
+          isMaster: false,
+          channels: [],
+          activeChannelIndex: 0
+        };
+        accountsDB.push(currentUser);
+        saveState();
+        toggleModal('authModal', false);
+        toggleModal('channelModal', true);
+      }
+    }
+
+    function handleCreateChannel(e) {
+      e.preventDefault();
+      const name = document.getElementById('newChannelName').value.trim();
+      const handle = document.getElementById('newChannelHandle').value.trim();
+      const desc = document.getElementById('newChannelDesc').value.trim();
+
+      let exists = false;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle.toLowerCase() === handle.toLowerCase() || ch.name.toLowerCase() === name.toLowerCase()) {
+              exists = true;
+            }
+          });
+        }
+      });
+
+      if (exists) {
+        document.getElementById('handleError').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('handleError').classList.add('hidden');
+      
+      const newCh = {
+        name: name,
+        handle: handle,
+        desc: desc,
+        subscribers: 0,
+        subscriptions: [],
+        videos: []
+      };
+
+      if (!currentUser.channels) currentUser.channels = [];
+      currentUser.channels.push(newCh);
+      currentUser.activeChannelIndex = currentUser.channels.length - 1;
+
+      saveState();
+      toggleModal('channelModal', false);
+      initSession();
+    }
+
+    function openSwitchModal() {
+      const container = document.getElementById('switchChannelList');
+      container.innerHTML = '';
+
+      if (currentUser && currentUser.channels) {
+        currentUser.channels.forEach((ch, idx) => {
+          const isActive = idx === currentUser.activeChannelIndex;
+          container.innerHTML += `
+            <div class="switch-item ${isActive ? 'active-ch' : ''}" onclick="selectChannelIndex(${idx})">
+              <div class="avatar" style="width:28px; height:28px; font-size:12px;">${ch.name.charAt(0).toUpperCase()}</div>
+              <div>
+                <div style="font-weight:bold; font-size:13px;">${ch.name} ${isActive ? '(Active)' : ''}</div>
+                <div style="font-size:11px; color:#aaa;">${ch.handle} • ${ch.subscribers} subs</div>
+              </div>
+            </div>
+          `;
+        });
+      }
+
+      container.innerHTML += `
+        <div class="switch-item" style="border-style:dashed;" onclick="promptAddChannel()">
+          <div class="avatar" style="width:28px; height:28px; font-size:12px; background:#272727; color:#fff;">➕</div>
+          <div style="font-weight:bold; font-size:13px; color:#3ea6ff;">Add / Create Another Channel</div>
+        </div>
+      `;
+
+      toggleModal('switchModal', true);
+    }
+
+    function selectChannelIndex(idx) {
+      currentUser.activeChannelIndex = idx;
+      saveState();
+      toggleModal('switchModal', false);
+      initSession();
+    }
+
+    function promptAddChannel() {
+      toggleModal('switchModal', false);
+      document.getElementById('newChannelName').value = '';
+      document.getElementById('newChannelHandle').value = '';
+      document.getElementById('newChannelDesc').value = '';
+      toggleModal('channelModal', true);
+    }
+
+    function logoutToAuth() {
+      toggleModal('switchModal', false);
+      currentUser = null;
+      document.getElementById('authEmail').value = '';
+      document.getElementById('authPass').value = '';
+      toggleModal('authModal', true);
+    }
+
+    function getCurrentChannel() {
+      if (!currentUser || !currentUser.channels || currentUser.channels.length === 0) return null;
+      return currentUser.channels[currentUser.activeChannelIndex || 0];
+    }
+
+    function initSession() {
+      const ch = getCurrentChannel();
+      const char = ch ? ch.name.charAt(0).toUpperCase() : 'U';
+      document.getElementById('headerAvatar').innerText = char;
+
+      if (currentUser.isMaster) {
+        document.getElementById('masterControlBtn').classList.remove('hidden');
+      } else {
+        document.getElementById('masterControlBtn').classList.add('hidden');
+      }
+
+      updateAllUI();
+      openVidPulseHome();
+    }
+
+    function handleVideoUpload(e) {
+      e.preventDefault();
+      const ch = getCurrentChannel();
+      if (!ch) {
+        alert('Please create a channel first!');
+        return;
+      }
+
+      const newVid = {
+        id: "vid_" + Date.now(),
+        title: document.getElementById('upTitle').value,
+        format: document.getElementById('upType').value,
+        url: document.getElementById('upUrl').value,
+        channelName: ch.name,
+        channelHandle: ch.handle,
+        views: 0,
+        impressions: 10,
+        likedBy: []
+      };
+
+      ch.videos.unshift(newVid);
+      platformVideos.unshift(newVid);
+
+      saveState();
+      toggleModal('uploadModal', false);
+      updateAllUI();
+      openVidPulseHome();
+    }
+
+    function playVideo(vid, isDirectOpen = true) {
+      activeVideo = vid;
+
+      if (isDirectOpen) {
+        vid.views += 1;
+        accountsDB.forEach(a => {
+          if (a.channels) {
+            a.channels.forEach(c => {
+              const matchingVid = c.videos.find(v => v.id === vid.id);
+              if (matchingVid) matchingVid.views = vid.views;
+            });
+          }
+        });
+        saveState();
+      }
+
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('sec-vpPlayer').classList.remove('hidden');
+
+      if (currentUser && currentUser.isMaster) {
+        document.getElementById('inPlayerMasterPanel').classList.remove('hidden');
+      } else {
+        document.getElementById('inPlayerMasterPanel').classList.add('hidden');
+      }
+
+      const player = document.getElementById('activePlayer');
+      if (player.src !== vid.url) {
+        player.src = vid.url;
+        player.play();
+      }
+
+      document.getElementById('activeVidTitle').innerText = vid.title;
+      document.getElementById('activeVidMeta').innerText = `${vid.views} views`;
+      document.getElementById('activeVidChannel').innerText = vid.channelName;
+      document.getElementById('activeVidAvatar').innerText = vid.channelName.charAt(0).toUpperCase();
+
+      let creatorCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === vid.channelHandle) creatorCh = ch;
+          });
+        }
+      });
+
+      const subCount = creatorCh ? creatorCh.subscribers : 0;
+      document.getElementById('activeVidSubCount').innerText = `${subCount} subscribers`;
+
+      const subBtn = document.getElementById('subBtn');
+      const curCh = getCurrentChannel();
+      if (curCh && curCh.subscriptions.includes(vid.channelHandle)) {
+        subBtn.innerText = "Subscribed";
+        subBtn.style.backgroundColor = "#272727";
+        subBtn.style.color = "#fff";
+      } else {
+        subBtn.innerText = "Subscribe";
+        subBtn.style.backgroundColor = "#3ea6ff";
+        subBtn.style.color = "#000";
+      }
+
+      const likeBtn = document.getElementById('likeBtn');
+      document.getElementById('likeCount').innerText = vid.likedBy.length;
+      if (currentUser && vid.likedBy.includes(currentUser.email)) {
+        likeBtn.style.color = "#3ea6ff";
+      } else {
+        likeBtn.style.color = "#ffffff";
+      }
+
+      updateAllUI();
+    }
+
+    function toggleLikeActiveVideo() {
+      if (!activeVideo || !currentUser) return;
+      const index = activeVideo.likedBy.indexOf(currentUser.email);
+      if (index === -1) {
+        activeVideo.likedBy.push(currentUser.email);
+      } else {
+        activeVideo.likedBy.splice(index, 1);
+      }
+      saveState();
+      playVideo(activeVideo, false);
+    }
+
+    function toggleSubscribeActiveChannel() {
+      const curCh = getCurrentChannel();
+      if (!activeVideo || !curCh) return;
+      
+      let creatorCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === activeVideo.channelHandle) creatorCh = ch;
+          });
+        }
+      });
+
+      if (!creatorCh) return;
+
+      const subIndex = curCh.subscriptions.indexOf(activeVideo.channelHandle);
+      if (subIndex === -1) {
+        curCh.subscriptions.push(activeVideo.channelHandle);
+        creatorCh.subscribers += 1;
+      } else {
+        curCh.subscriptions.splice(subIndex, 1);
+        creatorCh.subscribers = Math.max(0, creatorCh.subscribers - 1);
+      }
+
+      saveState();
+      playVideo(activeVideo, false);
+    }
+
+    function injectInPlayerViews() {
+      if (!activeVideo || !currentUser || !currentUser.isMaster) return;
+      const count = parseInt(document.getElementById('inPlayerAddViews').value) || 0;
+      
+      activeVideo.views += count;
+      activeVideo.impressions += count * 2;
+
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(c => {
+            const matchingVid = c.videos.find(v => v.id === activeVideo.id);
+            if (matchingVid) {
+              matchingVid.views += count;
+              matchingVid.impressions += count * 2;
+            }
+          });
+        }
+      });
+
+      saveState();
+      playVideo(activeVideo, false);
+      alert(`Successfully added ${count} views to this video!`);
+    }
+
+    function injectInPlayerSubs() {
+      if (!activeVideo || !currentUser || !currentUser.isMaster) return;
+      const count = parseInt(document.getElementById('inPlayerAddSubs').value) || 0;
+
+      let creatorCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === activeVideo.channelHandle) creatorCh = ch;
+          });
+        }
+      });
+
+      if (creatorCh) {
+        creatorCh.subscribers += count;
+        saveState();
+        playVideo(activeVideo, false);
+        alert(`Successfully added ${count} subscribers to channel ${creatorCh.name}!`);
+      }
+    }
+
+    function openVidPulseHome(list = platformVideos) {
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('sec-vpHome').classList.remove('hidden');
+
+      const grid = document.getElementById('mainHomeGrid');
+      grid.innerHTML = '';
+
+      if (list.length === 0) {
+        grid.innerHTML = `<p style="color:#aaa; grid-column: 1/-1;">No videos published yet. Upload a video to see it here!</p>`;
+        return;
+      }
+
+      list.forEach(v => {
+        grid.innerHTML += `
+          <div class="video-card" onclick='playVideo(${JSON.stringify(v)}, true)'>
+            <video class="video-thumb" src="${v.url}"></video>
+            <div class="video-info">
+              <div class="video-title-text">${v.title}</div>
+              <div class="video-meta">${v.channelName}</div>
+              <div class="video-meta">${v.views} views</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openMasterPanel() {
+      const select = document.getElementById('masterTargetSelect');
+      select.innerHTML = '';
+      
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            select.innerHTML += `<option value="${ch.handle}">${ch.name} (${ch.handle})</option>`;
+          });
+        }
+      });
+
+      loadMasterChannelStats();
+      toggleModal('masterModal', true);
+    }
+
+    function loadMasterChannelStats() {
+      const handle = document.getElementById('masterTargetSelect').value;
+      let targetCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === handle) targetCh = ch;
+          });
+        }
+      });
+
+      if (targetCh) {
+        document.getElementById('mStatSubs').innerText = targetCh.subscribers;
+        const views = targetCh.videos.reduce((sum, v) => sum + v.views, 0);
+        document.getElementById('mStatViews').innerText = views;
+      }
+    }
+
+    function masterInjectSubs() {
+      const handle = document.getElementById('masterTargetSelect').value;
+      const count = parseInt(document.getElementById('masterAddSubs').value) || 0;
+      let targetCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === handle) targetCh = ch;
+          });
+        }
+      });
+
+      if (targetCh) {
+        targetCh.subscribers += count;
+        saveState();
+        loadMasterChannelStats();
+        updateAllUI();
+        alert(`Injected ${count} subscribers to ${targetCh.name}!`);
+      }
+    }
+
+    function masterInjectViews() {
+      const handle = document.getElementById('masterTargetSelect').value;
+      const count = parseInt(document.getElementById('masterAddViews').value) || 0;
+      let targetCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === handle) targetCh = ch;
+          });
+        }
+      });
+
+      if (targetCh && targetCh.videos.length > 0) {
+        targetCh.videos.forEach(v => {
+          v.views += count;
+          v.impressions += count * 2;
+        });
+        saveState();
+        loadMasterChannelStats();
+        updateAllUI();
+        alert(`Injected ${count} views to ${targetCh.name}!`);
+      } else {
+        alert('This channel has no uploaded videos!');
+      }
+    }
+
+    function masterInspectChannel() {
+      const handle = document.getElementById('masterTargetSelect').value;
+      let targetCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === handle) targetCh = ch;
+          });
+        }
+      });
+
+      if (targetCh) {
+        toggleModal('masterModal', false);
+        openVidPulseHome(targetCh.videos);
+      }
+    }
+
+    function toggleModal(id, show) {
+      const el = document.getElementById(id);
+      if (show) el.classList.remove('hidden');
+      else el.classList.add('hidden');
+    }
+
+    function switchTab(tabKey, clickedItem) {
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`sec-${tabKey}`).classList.remove('hidden');
+
+      if (clickedItem) {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        clickedItem.classList.add('active');
+      }
+    }
+
+    function executeSearch() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!q) {
+        openVidPulseHome();
+        return;
+      }
+      const matches = platformVideos.filter(v => v.title.toLowerCase().includes(q) || v.channelName.toLowerCase().includes(q));
+      openVidPulseHome(matches);
+    }
+
+    function updateAllUI() {
+      const ch = getCurrentChannel();
+      if (!ch) return;
+
+      document.getElementById('custName').value = ch.name;
+      document.getElementById('custHandle').value = ch.handle;
+      document.getElementById('custDesc').value = ch.desc;
+
+      const totalViews = ch.videos.reduce((sum, v) => sum + v.views, 0);
+      const totalImpressions = ch.videos.reduce((sum, v) => sum + v.impressions, 0);
+
+      document.getElementById('dashSubs').innerText = ch.subscribers;
+      document.getElementById('dashViews').innerText = totalViews;
+      document.getElementById('dashWatchTime').innerText = (totalViews * 0.05).toFixed(1);
+
+      document.getElementById('anSubs').innerText = ch.subscribers;
+      document.getElementById('anViews').innerText = totalViews;
+      document.getElementById('anImpressions').innerText = totalImpressions;
+
+      if (ch.videos.length > 0) {
+        const latest = ch.videos[0];
+        document.getElementById('latestVidName').innerText = latest.title;
+        document.getElementById('latestVidViews').innerText = latest.views;
+        document.getElementById('latestVidLikes').innerText = latest.likedBy.length;
+      }
+
+      const tbody = document.getElementById('contentTableBody');
+      tbody.innerHTML = '';
+      if (ch.videos.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#aaa;">No videos uploaded yet.</td></tr>`;
+      } else {
+        ch.videos.forEach(v => {
+          tbody.innerHTML += `
+            <tr>
+              <td><strong>${v.title}</strong></td>
+              <td><span style="background:#383838; padding:2px 6px; border-radius:4px; font-size:10px;">${v.format.toUpperCase()}</span></td>
+              <td>${v.views}</td>
+              <td>${v.likedBy.length}</td>
+              <td><button class="btn btn-danger" onclick="deleteVideo('${v.id}')" style="padding: 3px 8px; font-size:11px;">Delete</button></td>
+            </tr>
+          `;
+        });
+      }
+    }
+
+    function deleteVideo(id) {
+      const ch = getCurrentChannel();
+      if (!ch) return;
+      ch.videos = ch.videos.filter(v => v.id !== id);
+      const pIndex = platformVideos.findIndex(v => v.id === id);
+      if (pIndex !== -1) platformVideos.splice(pIndex, 1);
+      saveState();
+      updateAllUI();
+    }
+
+    function saveCustomization(e) {
+      e.preventDefault();
+      const curCh = getCurrentChannel();
+      if (!curCh) return;
+
+      const newName = document.getElementById('custName').value.trim();
+      const newHandle = document.getElementById('custHandle').value.trim();
+
+      let collision = false;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch !== curCh && (ch.handle.toLowerCase() === newHandle.toLowerCase() || ch.name.toLowerCase() === newName.toLowerCase())) {
+              collision = true;
+            }
+          });
+        }
+      });
+
+      if (collision) {
+        alert('Another channel is already using that name or handle!');
+        return;
+      }
+
+      curCh.name = newName;
+      curCh.handle = newHandle;
+      curCh.desc = document.getElementById('custDesc').value;
+      saveState();
+      updateAllUI();
+      alert('Channel settings updated successfully!');
+    }
+  </script>
+</body>
+</html>
