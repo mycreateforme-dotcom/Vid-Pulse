@@ -4,6 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VidPulse Platform & Studio</title>
+  
+  <!-- Firebase SDKs for Global Multi-Laptop Data Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
   <style>
     /* Reset & Theme Styles */
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', Arial, sans-serif; }
@@ -29,6 +34,10 @@
     .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background: #121212; border: 1px solid #383838; border-radius: 6px; color: white; outline: none; }
     .input-group input:focus { border-color: #3ea6ff; }
     .error-msg { color: #ff4e4e; font-size: 12px; margin-top: 4px; }
+
+    /* File Drop Zone Area */
+    .file-upload-zone { border: 2px dashed #3ea6ff; border-radius: 8px; padding: 24px; text-align: center; background: #121212; cursor: pointer; transition: 0.2s; margin-bottom: 14px; }
+    .file-upload-zone:hover { background: #1a1a1a; }
 
     /* Switcher List Style */
     .switch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 250px; overflow-y: auto; }
@@ -93,7 +102,7 @@
   <div id="authModal" class="modal-overlay">
     <div class="auth-box">
       <h2>▶ Welcome to VidPulse</h2>
-      <p>Log in or Sign up to save your progress and access your channels.</p>
+      <p>Log in or Sign up to access your global channels.</p>
       <form onsubmit="handleAuth(event)">
         <div class="input-group">
           <label>Email Address</label>
@@ -149,7 +158,7 @@
   <div id="masterModal" class="modal-overlay hidden">
     <div class="auth-box" style="max-width: 520px;">
       <h2>👑 Master Admin Control Panel</h2>
-      <p>Control views, subscribers, and inspect any channel on the network.</p>
+      <p>Control views, subscribers, and inspect any channel on the global network.</p>
       <div class="input-group">
         <label>Select Target Channel</label>
         <select id="masterTargetSelect" onchange="loadMasterChannelStats()"></select>
@@ -185,15 +194,20 @@
     </div>
   </div>
 
-  <!-- UPLOAD MODAL -->
+  <!-- DIRECT COMPUTER FILE UPLOAD MODAL -->
   <div id="uploadModal" class="modal-overlay hidden">
     <div class="auth-box" style="max-width: 480px;">
-      <h2>Upload Video</h2>
+      <h2>Upload Video From Computer</h2>
       <form onsubmit="handleVideoUpload(event)">
-        <div class="input-group">
-          <label>Video Direct MP4 URL</label>
-          <input type="text" id="upUrl" placeholder="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" required>
+        
+        <!-- Native Device File Picker -->
+        <div class="file-upload-zone" onclick="document.getElementById('localVideoFile').click()">
+          <div style="font-size:28px; margin-bottom:6px;">📁</div>
+          <div style="font-weight:bold; font-size:13px;" id="fileZoneText">Click to select video from your Laptop</div>
+          <div style="font-size:11px; color:#aaa; margin-top:4px;">Supports MP4, WebM, MOV files</div>
+          <input type="file" id="localVideoFile" accept="video/*" class="hidden" onchange="previewSelectedFile(event)">
         </div>
+
         <div class="input-group">
           <label>Title</label>
           <input type="text" id="upTitle" placeholder="Video Title" required>
@@ -223,9 +237,8 @@
       <span>▶</span> VidPulse
     </div>
 
-    <!-- Search Bar -->
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search videos...">
+      <input type="text" id="searchInput" placeholder="Search videos globally...">
       <button onclick="executeSearch()">🔍</button>
     </div>
 
@@ -259,8 +272,6 @@
 
       <!-- PLAYER -->
       <div id="sec-vpPlayer" class="studio-section hidden">
-        
-        <!-- Master In-Player Admin Injection Toolbar -->
         <div id="inPlayerMasterPanel" class="player-admin-panel hidden">
           <div>
             <strong style="color:#ffd700; font-size:13px;">👑 Master Admin Video Controls:</strong>
@@ -393,6 +404,22 @@
 
   <!-- JAVASCRIPT MASTER LOGIC -->
   <script>
+    // --- OPTIONAL FIREBASE CONFIG (Paste your free keys here so other laptops see uploads) ---
+    const firebaseConfig = {
+      apiKey: "YOUR_FIREBASE_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "YOUR_APP_ID"
+    };
+
+    let db = null;
+    if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
+      firebase.initializeApp(firebaseConfig);
+      db = firebase.firestore();
+    }
+
     const MASTER_EMAIL = "Keshav@gmail.com";
     const MASTER_PASS = "123456789";
 
@@ -418,13 +445,85 @@
     let platformVideos = JSON.parse(localStorage.getItem('vp_videos')) || [];
     let activeVideo = null;
     let currentUser = null;
+    let selectedDeviceFileUrl = "";
 
     function saveState() {
       localStorage.setItem('vp_accounts', JSON.stringify(accountsDB));
       localStorage.setItem('vp_videos', JSON.stringify(platformVideos));
+      
+      if (db) {
+        db.collection("platform").doc("globalData").set({
+          accounts: accountsDB,
+          videos: platformVideos
+        });
+      }
     }
 
-    // Auth Engine
+    if (db) {
+      db.collection("platform").doc("globalData").onSnapshot(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          accountsDB = data.accounts || accountsDB;
+          platformVideos = data.videos || platformVideos;
+          updateAllUI();
+          openVidPulseHome();
+        }
+      });
+    }
+
+    // Preview File selected from Computer
+    function previewSelectedFile(event) {
+      const file = event.target.files[0];
+      if (file) {
+        selectedDeviceFileUrl = URL.createObjectURL(file);
+        document.getElementById('fileZoneText').innerText = `Selected: ${file.name}`;
+        
+        // Auto fill title if empty
+        if (!document.getElementById('upTitle').value) {
+          document.getElementById('upTitle').value = file.name.replace(/\.[^/.]+$/, "");
+        }
+      }
+    }
+
+    // Direct Computer File Upload Engine
+    function handleVideoUpload(e) {
+      e.preventDefault();
+      const ch = getCurrentChannel();
+      if (!ch) {
+        alert('Please create a channel first!');
+        return;
+      }
+
+      if (!selectedDeviceFileUrl) {
+        alert('Please select a video file from your laptop/computer first!');
+        return;
+      }
+
+      const newVid = {
+        id: "vid_" + Date.now(),
+        title: document.getElementById('upTitle').value,
+        format: document.getElementById('upType').value,
+        url: selectedDeviceFileUrl, // Streamable Local Video Blob URL
+        channelName: ch.name,
+        channelHandle: ch.handle,
+        views: 0,
+        impressions: 10,
+        likedBy: []
+      };
+
+      ch.videos.unshift(newVid);
+      platformVideos.unshift(newVid);
+
+      // Reset Form State
+      selectedDeviceFileUrl = "";
+      document.getElementById('fileZoneText').innerText = "Click to select video from your Laptop";
+
+      saveState();
+      toggleModal('uploadModal', false);
+      updateAllUI();
+      openVidPulseHome();
+    }
+
     function handleAuth(e) {
       e.preventDefault();
       const email = document.getElementById('authEmail').value.trim();
@@ -579,35 +678,6 @@
         document.getElementById('masterControlBtn').classList.add('hidden');
       }
 
-      updateAllUI();
-      openVidPulseHome();
-    }
-
-    function handleVideoUpload(e) {
-      e.preventDefault();
-      const ch = getCurrentChannel();
-      if (!ch) {
-        alert('Please create a channel first!');
-        return;
-      }
-
-      const newVid = {
-        id: "vid_" + Date.now(),
-        title: document.getElementById('upTitle').value,
-        format: document.getElementById('upType').value,
-        url: document.getElementById('upUrl').value,
-        channelName: ch.name,
-        channelHandle: ch.handle,
-        views: 0,
-        impressions: 10,
-        likedBy: []
-      };
-
-      ch.videos.unshift(newVid);
-      platformVideos.unshift(newVid);
-
-      saveState();
-      toggleModal('uploadModal', false);
       updateAllUI();
       openVidPulseHome();
     }
