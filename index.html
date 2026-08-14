@@ -3,116 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VidPulse Platform & Studio</title>
-  
-  <!-- Firebase SDKs for Global Multi-Laptop Data Sync -->
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-
+  <title>YouTube & YouTube Studio</title>
   <style>
-    /* Reset & Theme Styles */
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', Arial, sans-serif; }
-    body { background-color: #0f0f0f; color: #f1f1f1; display: flex; flex-direction: column; min-height: 100vh; }
-    
-    /* Utilities */
+    :root {
+      --yt-bg: #0f0f0f;
+      --yt-surface: #212121;
+      --yt-border: #383838;
+      --yt-text: #f1f1f1;
+      --yt-text-secondary: #aaaaaa;
+      --yt-red: #ff0000;
+      --yt-blue: #3ea6ff;
+      --yt-gold: #ffd700;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Roboto', -apple-system, BlinkMacSystemFont, Arial, sans-serif; }
+    body { background-color: var(--yt-bg); color: var(--yt-text); display: flex; flex-direction: column; min-height: 100vh; overflow-x: hidden; }
+
     .hidden { display: none !important; }
-    .btn { padding: 8px 16px; border-radius: 18px; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 13px; }
-    .btn-primary { background-color: #3ea6ff; color: #0f0f0f; }
+    .btn { padding: 8px 16px; border-radius: 18px; border: none; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary { background-color: var(--yt-blue); color: #0f0f0f; font-weight: bold; }
     .btn-primary:hover { background-color: #65b8ff; }
-    .btn-danger { background-color: #cc0000; color: white; }
-    .btn-dark { background-color: #272727; color: white; }
+    .btn-danger { background-color: #cc0000; color: #fff; }
+    .btn-dark { background-color: #272727; color: #fff; border: 1px solid var(--yt-border); }
     .btn-dark:hover { background-color: #3f3f3f; }
-    .btn-gold { background-color: #ffd700; color: #000; }
+    .btn-gold { background-color: var(--yt-gold); color: #000; font-weight: bold; }
+    .badge { padding: 2px 8px; border-radius: 4px; font-size: 11px; background: #383838; }
 
     /* Modals */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 1000; }
-    .auth-box { background: #212121; padding: 28px; border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-    .auth-box h2 { margin-bottom: 8px; color: #ff0000; display: flex; align-items: center; gap: 8px; }
-    .auth-box p { color: #aaa; font-size: 13px; margin-bottom: 16px; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+    .auth-box { background: var(--yt-surface); padding: 28px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 8px 28px rgba(0,0,0,0.7); border: 1px solid var(--yt-border); }
+    .auth-box h2 { margin-bottom: 8px; color: var(--yt-red); display: flex; align-items: center; gap: 8px; font-size: 20px; }
+    .auth-box p { color: var(--yt-text-secondary); font-size: 13px; margin-bottom: 16px; line-height: 1.4; }
     .input-group { margin-bottom: 14px; }
-    .input-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 4px; }
-    .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px; background: #121212; border: 1px solid #383838; border-radius: 6px; color: white; outline: none; }
-    .input-group input:focus { border-color: #3ea6ff; }
+    .input-group label { display: block; font-size: 12px; color: var(--yt-text-secondary); margin-bottom: 4px; font-weight: 500; }
+    .input-group input, .input-group textarea, .input-group select { width: 100%; padding: 10px 12px; background: #121212; border: 1px solid var(--yt-border); border-radius: 6px; color: #fff; outline: none; font-size: 13px; }
+    .input-group input:focus, .input-group textarea:focus { border-color: var(--yt-blue); }
     .error-msg { color: #ff4e4e; font-size: 12px; margin-top: 4px; }
 
-    /* File Drop Zone Area */
-    .file-upload-zone { border: 2px dashed #3ea6ff; border-radius: 8px; padding: 24px; text-align: center; background: #121212; cursor: pointer; transition: 0.2s; margin-bottom: 14px; }
-    .file-upload-zone:hover { background: #1a1a1a; }
+    /* File Drop Zone */
+    .file-upload-zone { border: 2px dashed var(--yt-blue); border-radius: 8px; padding: 28px 16px; text-align: center; background: #121212; cursor: pointer; transition: 0.2s; margin-bottom: 14px; }
+    .file-upload-zone:hover { background: #181818; border-color: #65b8ff; }
+    .file-upload-zone.active { border-color: #2ba640; background: #112415; }
 
-    /* Switcher List Style */
-    .switch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 250px; overflow-y: auto; }
-    .switch-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #171717; border: 1px solid #383838; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-    .switch-item:hover { background: #2a2a2a; border-color: #3ea6ff; }
-    .switch-item.active-ch { border-color: #ff0000; background: #221515; }
+    /* Switcher Item */
+    .switch-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 260px; overflow-y: auto; }
+    .switch-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #171717; border: 1px solid var(--yt-border); border-radius: 8px; cursor: pointer; transition: 0.2s; }
+    .switch-item:hover { background: #2a2a2a; border-color: var(--yt-blue); }
+    .switch-item.active-ch { border-color: var(--yt-red); background: #221515; }
 
-    /* Player In-Video Admin Panel */
-    .player-admin-panel { background: #221a00; border: 1px solid #ffd700; padding: 12px; border-radius: 8px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    /* Header */
+    header { height: 56px; background: var(--yt-surface); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--yt-border); position: sticky; top: 0; z-index: 1000; }
+    .brand { display: flex; align-items: center; gap: 6px; font-weight: bold; font-size: 19px; cursor: pointer; letter-spacing: -0.5px; }
+    .brand span { color: var(--yt-red); font-size: 24px; }
+    .brand-sub { font-size: 11px; background: #383838; padding: 2px 6px; border-radius: 4px; margin-left: 6px; font-weight: normal; }
 
-    /* App Header */
-    header { height: 56px; background: #212121; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid #383838; position: sticky; top: 0; z-index: 100; }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: bold; font-size: 18px; cursor: pointer; }
-    .brand span { color: #ff0000; font-size: 22px; }
-    
-    /* Search Bar */
-    .search-container { display: flex; width: 35%; position: relative; }
-    .search-container input { width: 100%; padding: 8px 16px; background-color: #121212; border: 1px solid #303030; border-radius: 20px 0 0 20px; color: white; outline: none; }
-    .search-container button { padding: 8px 16px; background-color: #222222; border: 1px solid #303030; border-left: none; border-radius: 0 20px 20px 0; color: white; cursor: pointer; }
+    .search-container { display: flex; width: 40%; max-width: 600px; position: relative; }
+    .search-container input { width: 100%; padding: 8px 16px; background-color: #121212; border: 1px solid #303030; border-radius: 20px 0 0 20px; color: #fff; outline: none; font-size: 14px; }
+    .search-container button { padding: 8px 20px; background-color: #222222; border: 1px solid #303030; border-left: none; border-radius: 0 20px 20px 0; color: #fff; cursor: pointer; }
+    .search-container button:hover { background-color: #303030; }
 
     .user-profile { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 34px; height: 34px; border-radius: 50%; background: #3ea6ff; color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--yt-blue); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
 
-    /* Studio Layout */
+    /* Layout */
     .studio-container { display: flex; flex: 1; min-height: calc(100vh - 56px); }
-    .sidebar { width: 220px; background: #1f1f1f; border-right: 1px solid #383838; padding-top: 12px; flex-shrink: 0; }
+    .sidebar { width: 230px; background: #1f1f1f; border-right: 1px solid var(--yt-border); padding-top: 12px; flex-shrink: 0; }
     .sidebar-menu { list-style: none; }
-    .sidebar-item { padding: 12px 20px; display: flex; align-items: center; gap: 14px; color: #aaa; font-size: 13px; cursor: pointer; border-left: 4px solid transparent; }
-    .sidebar-item:hover, .sidebar-item.active { background: #272727; color: #fff; border-left-color: #ff0000; }
+    .sidebar-item { padding: 12px 20px; display: flex; align-items: center; gap: 14px; color: var(--yt-text-secondary); font-size: 13px; cursor: pointer; border-left: 4px solid transparent; }
+    .sidebar-item:hover, .sidebar-item.active { background: #272727; color: #fff; border-left-color: var(--yt-red); }
 
-    /* Main Content */
-    .main-content { flex: 1; padding: 24px; overflow-y: auto; background: #0f0f0f; }
-    .section-title { font-size: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+    .main-content { flex: 1; padding: 24px; overflow-y: auto; background: var(--yt-bg); }
+    .section-title { font-size: 22px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; font-weight: bold; }
 
-    /* Cards Grid */
+    /* Grids & Cards */
     .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
-    .card { background: #212121; padding: 16px; border-radius: 8px; border: 1px solid #383838; }
-    .card h3 { font-size: 12px; color: #aaa; margin-bottom: 6px; text-transform: uppercase; }
-    .card .stat { font-size: 24px; font-weight: bold; margin-bottom: 2px; }
+    .card { background: var(--yt-surface); padding: 18px; border-radius: 8px; border: 1px solid var(--yt-border); }
+    .card h3 { font-size: 12px; color: var(--yt-text-secondary); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card .stat { font-size: 26px; font-weight: bold; margin-bottom: 2px; }
+    .card .subtext { font-size: 11px; color: #2ba640; }
 
-    /* Tables */
-    table { width: 100%; border-collapse: collapse; background: #212121; border-radius: 8px; overflow: hidden; margin-top: 8px; }
-    th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #383838; font-size: 13px; }
-    th { background: #171717; color: #aaa; font-weight: normal; }
+    table { width: 100%; border-collapse: collapse; background: var(--yt-surface); border-radius: 8px; overflow: hidden; margin-top: 8px; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--yt-border); font-size: 13px; }
+    th { background: #171717; color: var(--yt-text-secondary); font-weight: 500; }
 
-    /* Video Grid */
+    .nav-tabs { display: flex; gap: 20px; border-bottom: 1px solid var(--yt-border); margin-bottom: 20px; padding-bottom: 8px; }
+    .nav-tab-item { cursor: pointer; color: var(--yt-text-secondary); font-size: 13px; font-weight: 500; padding-bottom: 6px; border-bottom: 2px solid transparent; }
+    .nav-tab-item.active { color: var(--yt-blue); border-bottom-color: var(--yt-blue); }
+
+    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+    .video-card { background: var(--yt-surface); border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; border: 1px solid transparent; }
+    .video-card:hover { transform: translateY(-3px); border-color: var(--yt-border); }
+    .video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; display: flex; align-items: center; justify-content: center; }
+    .video-info { padding: 12px; }
+    .video-title-text { font-size: 14px; font-weight: 600; line-height: 1.3; margin-bottom: 6px; color: #fff; }
+    .video-meta { font-size: 12px; color: var(--yt-text-secondary); line-height: 1.4; }
+
+    .shorts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
+    .shorts-card { aspect-ratio: 9/16; background: #1a1a1a; border-radius: 12px; overflow: hidden; position: relative; cursor: pointer; border: 1px solid var(--yt-border); }
+    .shorts-card:hover { border-color: var(--yt-blue); }
+
+    .channel-banner { height: 160px; background: linear-gradient(90deg, #ff0000, #4285f4); border-radius: 12px; margin-bottom: 16px; }
+    .channel-header-info { display: flex; gap: 20px; align-items: center; margin-bottom: 24px; }
+    .channel-avatar-lg { width: 80px; height: 80px; border-radius: 50%; font-size: 32px; background: var(--yt-blue); color: #000; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+
     .main-player-layout { display: flex; gap: 24px; }
-    .video-view-left { flex: 2; }
-    .video-view-right { flex: 1; min-width: 300px; }
-    .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
-    .video-card { background: #212121; border-radius: 8px; overflow: hidden; cursor: pointer; transition: 0.2s; }
-    .video-card:hover { transform: translateY(-2px); }
-    .video-thumb { width: 100%; aspect-ratio: 16/9; background: #000; object-fit: cover; }
-    .video-info { padding: 10px; }
-    .video-title-text { font-size: 13px; font-weight: bold; line-height: 1.3; margin-bottom: 4px; color: #fff; }
-    .video-meta { font-size: 11px; color: #aaa; }
+    .video-view-left { flex: 2.2; }
+    .video-view-right { flex: 1; min-width: 320px; }
+    .player-admin-panel { background: #221a00; border: 1px solid var(--yt-gold); padding: 12px; border-radius: 8px; margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
   </style>
 </head>
 <body>
 
-  <!-- AUTHENTICATION MODAL -->
+  <!-- AUTH MODAL -->
   <div id="authModal" class="modal-overlay">
     <div class="auth-box">
-      <h2>▶ Welcome to VidPulse</h2>
-      <p>Log in or Sign up to access your global channels.</p>
+      <h2>▶ Welcome to YouTube Studio</h2>
+      <p>Log in with your email & password to access your creator dashboard.</p>
       <form onsubmit="handleAuth(event)">
         <div class="input-group">
           <label>Email Address</label>
-          <input type="email" id="authEmail" required placeholder="name@domain.com">
+          <input type="email" id="authEmail" required placeholder="user@gmail.com">
         </div>
         <div class="input-group">
           <label>Password</label>
           <input type="password" id="authPass" required placeholder="••••••••">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Log In / Register</button>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Log In / Create Account</button>
       </form>
     </div>
   </div>
@@ -120,8 +135,8 @@
   <!-- CHANNEL CREATION MODAL -->
   <div id="channelModal" class="modal-overlay hidden">
     <div class="auth-box">
-      <h2>🎉 Create a VidPulse Channel</h2>
-      <p>Choose a unique channel name and handle.</p>
+      <h2>🎉 Create Your Channel</h2>
+      <p>Choose a unique channel name and @handle.</p>
       <form onsubmit="handleCreateChannel(event)">
         <div class="input-group">
           <label>Channel Name</label>
@@ -130,22 +145,22 @@
         <div class="input-group">
           <label>Unique Handle</label>
           <input type="text" id="newChannelHandle" required placeholder="@KeshavDecoded">
-          <div id="handleError" class="error-msg hidden">That handle or channel name is already taken!</div>
+          <div id="handleError" class="error-msg hidden">That handle or name is already registered!</div>
         </div>
         <div class="input-group">
           <label>Channel Description</label>
-          <textarea id="newChannelDesc" rows="2" placeholder="What is your channel about?"></textarea>
+          <textarea id="newChannelDesc" rows="2" placeholder="Tell viewers what your channel is about..."></textarea>
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">Create Channel</button>
       </form>
     </div>
   </div>
 
-  <!-- SWITCH ACCOUNTS / CHANNELS MODAL -->
+  <!-- SWITCH CHANNELS MODAL -->
   <div id="switchModal" class="modal-overlay hidden">
     <div class="auth-box">
       <h2>🔄 Switch Channel / Account</h2>
-      <p>Select an existing channel or create a new one under your account:</p>
+      <p>Select your active channel or create an additional channel:</p>
       <div id="switchChannelList" class="switch-list"></div>
       <div style="display:flex; gap:8px; margin-top:12px;">
         <button type="button" class="btn btn-dark" style="flex:1;" onclick="logoutToAuth()">Log Out Account</button>
@@ -154,11 +169,11 @@
     </div>
   </div>
 
-  <!-- MASTER ADMIN CONTROL PANEL MODAL -->
+  <!-- MASTER ADMIN CONTROL PANEL -->
   <div id="masterModal" class="modal-overlay hidden">
     <div class="auth-box" style="max-width: 520px;">
       <h2>👑 Master Admin Control Panel</h2>
-      <p>Control views, subscribers, and inspect any channel on the global network.</p>
+      <p>Manage subscribers, views, impressions, and likes for all channels.</p>
       <div class="input-group">
         <label>Select Target Channel</label>
         <select id="masterTargetSelect" onchange="loadMasterChannelStats()"></select>
@@ -187,6 +202,13 @@
           <button type="button" class="btn btn-gold" onclick="masterInjectViews()">Inject Views</button>
         </div>
       </div>
+      <div class="input-group">
+        <label>Add Likes to all Channel Videos</label>
+        <div style="display:flex; gap:8px;">
+          <input type="number" id="masterAddLikes" placeholder="e.g. 200" value="100">
+          <button type="button" class="btn btn-gold" onclick="masterInjectLikes()">Inject Likes</button>
+        </div>
+      </div>
       <div style="display: flex; gap: 8px; margin-top: 16px;">
         <button type="button" class="btn btn-primary" style="flex:1;" onclick="masterInspectChannel()">Inspect Channel</button>
         <button type="button" class="btn btn-dark" onclick="toggleModal('masterModal', false)">Close</button>
@@ -194,37 +216,50 @@
     </div>
   </div>
 
-  <!-- DIRECT COMPUTER FILE UPLOAD MODAL -->
+  <!-- UPLOAD VIDEO MODAL -->
   <div id="uploadModal" class="modal-overlay hidden">
-    <div class="auth-box" style="max-width: 480px;">
-      <h2>Upload Video From Computer</h2>
+    <div class="auth-box" style="max-width: 520px;">
+      <h2>Upload Videos</h2>
       <form onsubmit="handleVideoUpload(event)">
-        
-        <!-- Native Device File Picker -->
-        <div class="file-upload-zone" onclick="document.getElementById('localVideoFile').click()">
-          <div style="font-size:28px; margin-bottom:6px;">📁</div>
-          <div style="font-weight:bold; font-size:13px;" id="fileZoneText">Click to select video from your Laptop</div>
-          <div style="font-size:11px; color:#aaa; margin-top:4px;">Supports MP4, WebM, MOV files</div>
+        <div class="file-upload-zone" id="dropZone" onclick="document.getElementById('localVideoFile').click()">
+          <div style="font-size:32px; margin-bottom:8px;">📁</div>
+          <div style="font-weight:bold; font-size:14px;" id="fileZoneText">Select Video File from Computer</div>
+          <div style="font-size:12px; color:#aaa; margin-top:4px;">Supports MP4, WebM, MOV, AVI (Instant Upload)</div>
           <input type="file" id="localVideoFile" accept="video/*" class="hidden" onchange="previewSelectedFile(event)">
         </div>
 
         <div class="input-group">
-          <label>Title</label>
-          <input type="text" id="upTitle" placeholder="Video Title" required>
+          <label>Title (required)</label>
+          <input type="text" id="upTitle" placeholder="Add a title that describes your video..." required>
         </div>
         <div class="input-group">
           <label>Format</label>
           <select id="upType">
             <option value="video">Long-form Video</option>
-            <option value="short">Short (Vertical)</option>
+            <option value="short">Short (Vertical Feed)</option>
           </select>
         </div>
         <div class="input-group">
           <label>Description</label>
-          <textarea id="upDesc" rows="2" placeholder="Video description..."></textarea>
+          <textarea id="upDesc" rows="2" placeholder="Tell viewers about your video..."></textarea>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <button type="submit" class="btn btn-primary" style="flex:1;">Publish Video</button>
+        <div class="input-group">
+          <label>Audience</label>
+          <select id="upAudience">
+            <option value="No">No, it's not Made for Kids</option>
+            <option value="Yes">Yes, it's Made for Kids</option>
+          </select>
+        </div>
+        <div class="input-group">
+          <label>Visibility</label>
+          <select id="upVisibility">
+            <option value="Public">Public (Everyone can watch)</option>
+            <option value="Unlisted">Unlisted</option>
+            <option value="Private">Private</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 8px; margin-top: 16px;">
+          <button type="submit" class="btn btn-primary" style="flex:1;" id="uploadSubmitBtn">Publish</button>
           <button type="button" class="btn btn-dark" onclick="toggleModal('uploadModal', false)">Cancel</button>
         </div>
       </form>
@@ -233,20 +268,20 @@
 
   <!-- HEADER -->
   <header>
-    <div class="brand" onclick="openVidPulseHome()">
-      <span>▶</span> VidPulse
+    <div class="brand" onclick="openYouTubeHome()">
+      <span>▶</span> YouTube <span class="brand-sub">Studio</span>
     </div>
 
     <div class="search-container">
-      <input type="text" id="searchInput" placeholder="Search videos globally...">
+      <input type="text" id="searchInput" placeholder="Search videos...">
       <button onclick="executeSearch()">🔍</button>
     </div>
 
     <div class="user-profile">
       <button id="masterControlBtn" class="btn btn-gold hidden" onclick="openMasterPanel()">👑 Master Panel</button>
-      <button class="btn btn-primary" onclick="toggleModal('uploadModal', true)">➕ Create</button>
-      <button class="btn btn-dark" onclick="switchTab('dashboard')">VidPulse Studio</button>
-      <button class="btn btn-dark" onclick="openSwitchModal()">🔄 Switch Channel / Account</button>
+      <button class="btn btn-primary" onclick="openUploadModal()">➕ Create</button>
+      <button class="btn btn-dark" onclick="switchTab('dashboard')">Studio Dashboard</button>
+      <button class="btn btn-dark" onclick="openSwitchModal()">🔄 Switch Channel</button>
       <div class="avatar" id="headerAvatar">U</div>
     </div>
   </header>
@@ -255,33 +290,75 @@
   <div class="studio-container">
     <div class="sidebar">
       <ul class="sidebar-menu">
-        <li class="sidebar-item" onclick="openVidPulseHome()">🏠 VidPulse Home</li>
+        <li class="sidebar-item" onclick="openYouTubeHome()">🏠 Home</li>
+        <li class="sidebar-item" onclick="openShortsFeed()">⚡ Shorts</li>
+        <li class="sidebar-item" onclick="openPublicChannel()">👤 Your Channel</li>
+        <hr style="border:none; border-top:1px solid var(--yt-border); margin:8px 0;">
         <li class="sidebar-item active" onclick="switchTab('dashboard', this)">📊 Dashboard</li>
         <li class="sidebar-item" onclick="switchTab('content', this)">📹 Content</li>
         <li class="sidebar-item" onclick="switchTab('analytics', this)">📈 Analytics</li>
+        <li class="sidebar-item" onclick="switchTab('comments', this)">💬 Comments</li>
+        <li class="sidebar-item" onclick="switchTab('copyright', this)">⚖️ Copyright</li>
+        <li class="sidebar-item" onclick="switchTab('earn', this)">💲 Earn</li>
         <li class="sidebar-item" onclick="switchTab('customization', this)">🎨 Customization</li>
+        <li class="sidebar-item" onclick="switchTab('settings', this)">⚙️ Settings</li>
       </ul>
     </div>
 
     <div class="main-content">
-      <!-- HOME PAGE -->
-      <div id="sec-vpHome" class="studio-section">
-        <h2 style="margin-bottom: 12px;" id="homeHeading">Recommended Videos</h2>
+      <!-- 1. HOME FEED -->
+      <div id="sec-ytHome" class="studio-section">
+        <h2 style="margin-bottom: 16px;" id="homeHeading">Recommended Videos</h2>
         <div class="video-grid" id="mainHomeGrid"></div>
       </div>
 
-      <!-- PLAYER -->
-      <div id="sec-vpPlayer" class="studio-section hidden">
+      <!-- 2. SHORTS FEED -->
+      <div id="sec-shorts" class="studio-section hidden">
+        <h2 style="margin-bottom: 16px;">⚡ YouTube Shorts</h2>
+        <div class="shorts-grid" id="shortsGrid"></div>
+      </div>
+
+      <!-- 3. PUBLIC CHANNEL VIEW -->
+      <div id="sec-publicChannel" class="studio-section hidden">
+        <div class="channel-banner"></div>
+        <div class="channel-header-info">
+          <div class="channel-avatar-lg" id="pubAvatar">K</div>
+          <div>
+            <h1 id="pubName">Channel Name</h1>
+            <p id="pubHandle" style="color:var(--yt-text-secondary); font-size:14px; margin:4px 0;">@handle • 0 subscribers</p>
+            <p id="pubDesc" style="font-size:13px; color:#ddd;"></p>
+          </div>
+          <button class="btn btn-primary" style="margin-left:auto;">Subscribe</button>
+        </div>
+
+        <div class="nav-tabs">
+          <div class="nav-tab-item active">Home</div>
+          <div class="nav-tab-item">Videos</div>
+          <div class="nav-tab-item">Shorts</div>
+          <div class="nav-tab-item">Playlists</div>
+          <div class="nav-tab-item">Community</div>
+          <div class="nav-tab-item">About</div>
+        </div>
+
+        <div class="video-grid" id="publicChannelGrid"></div>
+      </div>
+
+      <!-- 4. VIDEO PLAYER SCREEN -->
+      <div id="sec-ytPlayer" class="studio-section hidden">
         <div id="inPlayerMasterPanel" class="player-admin-panel hidden">
           <div>
-            <strong style="color:#ffd700; font-size:13px;">👑 Master Admin Video Controls:</strong>
-            <span style="font-size:12px; color:#ddd; margin-left:8px;">Inject stats for this video & channel</span>
+            <strong style="color:#ffd700; font-size:13px;">👑 Master Admin Controls:</strong>
+            <span style="font-size:12px; color:#ddd; margin-left:6px;">Inject stats directly into this video</span>
           </div>
-          <div style="display:flex; gap:8px;">
-            <input type="number" id="inPlayerAddViews" placeholder="Views" value="100" style="width:80px; padding:4px 8px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:12px;">
-            <button class="btn btn-gold" style="padding:4px 10px; font-size:11px;" onclick="injectInPlayerViews()">+ Add Views</button>
-            <input type="number" id="inPlayerAddSubs" placeholder="Subs" value="50" style="width:80px; padding:4px 8px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:12px;">
-            <button class="btn btn-gold" style="padding:4px 10px; font-size:11px;" onclick="injectInPlayerSubs()">+ Add Subs</button>
+          <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            <input type="number" id="inPlayerAddViews" placeholder="Views" value="100" style="width:70px; padding:4px 6px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:11px;">
+            <button class="btn btn-gold" style="padding:4px 8px; font-size:11px;" onclick="injectInPlayerViews()">+ Views</button>
+            
+            <input type="number" id="inPlayerAddLikes" placeholder="Likes" value="50" style="width:70px; padding:4px 6px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:11px;">
+            <button class="btn btn-gold" style="padding:4px 8px; font-size:11px;" onclick="injectInPlayerLikes()">+ Likes</button>
+
+            <input type="number" id="inPlayerAddSubs" placeholder="Subs" value="50" style="width:70px; padding:4px 6px; background:#000; border:1px solid #ffd700; color:#fff; border-radius:4px; font-size:11px;">
+            <button class="btn btn-gold" style="padding:4px 8px; font-size:11px;" onclick="injectInPlayerSubs()">+ Subs</button>
           </div>
         </div>
 
@@ -289,13 +366,13 @@
           <div class="video-view-left">
             <video id="activePlayer" controls autoplay style="width:100%; aspect-ratio:16/9; background:#000; border-radius:8px;"></video>
             <h2 id="activeVidTitle" style="margin-top:12px;">Title</h2>
-            <p id="activeVidMeta" style="color:#aaa; font-size:13px; margin-top:4px;">0 views</p>
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-bottom:1px solid #383838; padding-bottom:12px;">
+            <p id="activeVidMeta" style="color:var(--yt-text-secondary); font-size:13px; margin-top:4px;">0 views</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-bottom:1px solid var(--yt-border); padding-bottom:12px;">
               <div style="display:flex; align-items:center; gap:10px;">
                 <div class="avatar" id="activeVidAvatar">C</div>
                 <div>
                   <div style="font-weight:bold;" id="activeVidChannel">Channel Name</div>
-                  <div style="font-size:11px; color:#aaa;" id="activeVidSubCount">0 subscribers</div>
+                  <div style="font-size:11px; color:var(--yt-text-secondary);" id="activeVidSubCount">0 subscribers</div>
                 </div>
                 <button class="btn btn-primary" id="subBtn" onclick="toggleSubscribeActiveChannel()">Subscribe</button>
               </div>
@@ -311,44 +388,49 @@
         </div>
       </div>
 
-      <!-- DASHBOARD -->
+      <!-- 5. STUDIO: DASHBOARD -->
       <div id="sec-dashboard" class="studio-section hidden">
         <div class="section-title">Channel Dashboard</div>
         <div class="grid">
           <div class="card">
-            <h3>Subscribers</h3>
+            <h3>Current Subscribers</h3>
             <div class="stat" id="dashSubs">0</div>
+            <div class="subtext">+0 in last 28 days</div>
           </div>
           <div class="card">
             <h3>Channel Views</h3>
             <div class="stat" id="dashViews">0</div>
+            <div class="subtext">Real-time update</div>
           </div>
           <div class="card">
             <h3>Watch Time (Hours)</h3>
             <div class="stat" id="dashWatchTime">0.0</div>
+            <div class="subtext">From published content</div>
           </div>
         </div>
         <div class="card">
-          <h3>Latest Upload Performance</h3>
-          <p style="font-size:14px; margin-top:6px;" id="latestVidName">No videos published yet.</p>
+          <h3>Latest Video Performance</h3>
+          <p style="font-size:15px; margin-top:6px; font-weight:bold;" id="latestVidName">No videos published yet.</p>
           <div style="display: flex; gap: 24px; font-size: 13px; margin-top: 10px; color: #aaa;">
             <div>Views: <span style="color:white; font-weight:bold;" id="latestVidViews">0</span></div>
             <div>Likes: <span style="color:white; font-weight:bold;" id="latestVidLikes">0</span></div>
+            <div>CTR: <span style="color:white; font-weight:bold;" id="latestVidCTR">0%</span></div>
           </div>
         </div>
       </div>
 
-      <!-- CONTENT TABLE -->
+      <!-- 6. STUDIO: CONTENT -->
       <div id="sec-content" class="studio-section hidden">
         <div class="section-title">
-          <span>Channel Uploads</span>
-          <button class="btn btn-primary" onclick="toggleModal('uploadModal', true)">Upload Video</button>
+          <span>Channel Content</span>
+          <button class="btn btn-primary" onclick="openUploadModal()">Upload Video</button>
         </div>
         <table>
           <thead>
             <tr>
               <th>Video</th>
               <th>Format</th>
+              <th>Visibility</th>
               <th>Views</th>
               <th>Likes</th>
               <th>Actions</th>
@@ -358,26 +440,98 @@
         </table>
       </div>
 
-      <!-- ANALYTICS -->
+      <!-- 7. STUDIO: ANALYTICS SUITE -->
       <div id="sec-analytics" class="studio-section hidden">
-        <div class="section-title">Analytics Overview</div>
-        <div class="grid">
-          <div class="card">
-            <h3>Total Views</h3>
-            <div class="stat" id="anViews">0</div>
+        <div class="section-title">Channel Analytics</div>
+        
+        <div class="nav-tabs">
+          <div class="nav-tab-item active" onclick="switchAnalyticsSubTab('overview', this)">Overview</div>
+          <div class="nav-tab-item" onclick="switchAnalyticsSubTab('reach', this)">Reach</div>
+          <div class="nav-tab-item" onclick="switchAnalyticsSubTab('engagement', this)">Engagement</div>
+          <div class="nav-tab-item" onclick="switchAnalyticsSubTab('audience', this)">Audience</div>
+          <div class="nav-tab-item" onclick="switchAnalyticsSubTab('revenue', this)">Revenue</div>
+        </div>
+
+        <div id="an-overview" class="an-subview">
+          <div class="grid">
+            <div class="card"><h3>Views</h3><div class="stat" id="anViews">0</div></div>
+            <div class="card"><h3>Watch Time (Hours)</h3><div class="stat" id="anWatch">0.0</div></div>
+            <div class="card"><h3>Subscribers</h3><div class="stat" id="anSubs">0</div></div>
           </div>
           <div class="card">
-            <h3>Total Impressions</h3>
-            <div class="stat" id="anImpressions">0</div>
+            <h3>Realtime Performance</h3>
+            <p style="font-size:12px; color:#aaa; margin-top:4px;" id="realtimeStatus">No live activity recorded yet.</p>
+          </div>
+        </div>
+
+        <div id="an-reach" class="an-subview hidden">
+          <div class="grid">
+            <div class="card"><h3>Impressions</h3><div class="stat" id="anImpressions">0</div></div>
+            <div class="card"><h3>Impressions CTR</h3><div class="stat" id="anCTR">0.0%</div></div>
+            <div class="card"><h3>Unique Viewers</h3><div class="stat" id="anUnique">0</div></div>
           </div>
           <div class="card">
-            <h3>Subscribers</h3>
-            <div class="stat" id="anSubs">0</div>
+            <h3>Traffic Sources</h3>
+            <p style="font-size:13px; color:#aaa; margin-top:6px;">• YouTube Search: <strong style="color:#fff;" id="tsSearch">0%</strong></p>
+            <p style="font-size:13px; color:#aaa; margin-top:4px;">• Browse Features: <strong style="color:#fff;" id="tsBrowse">0%</strong></p>
+            <p style="font-size:13px; color:#aaa; margin-top:4px;">• Suggested Videos: <strong style="color:#fff;" id="tsSuggested">0%</strong></p>
+          </div>
+        </div>
+
+        <div id="an-engagement" class="an-subview hidden">
+          <div class="grid">
+            <div class="card"><h3>Average View Duration</h3><div class="stat" id="anAVD">0:00</div></div>
+            <div class="card"><h3>Average Percentage Viewed</h3><div class="stat" id="anAPV">0%</div></div>
+          </div>
+          <div class="card">
+            <h3>Audience Retention Key Moments</h3>
+            <p style="font-size:12px; color:#aaa; margin-top:4px;">• Intro Retention (0:30s): <strong style="color:#fff;" id="retIntro">0%</strong></p>
+            <p style="font-size:12px; color:#aaa; margin-top:4px;">• Top Moments: <span id="retTop">No data</span></p>
+          </div>
+        </div>
+
+        <div id="an-audience" class="an-subview hidden">
+          <div class="grid">
+            <div class="card"><h3>New Viewers</h3><div class="stat" id="audNew">0</div></div>
+            <div class="card"><h3>Casual Viewers</h3><div class="stat" id="audCasual">0</div></div>
+            <div class="card"><h3>Regular Viewers</h3><div class="stat" id="audRegular">0</div></div>
+          </div>
+        </div>
+
+        <div id="an-revenue" class="an-subview hidden">
+          <div class="card">
+            <h3>Estimated Revenue</h3>
+            <div class="stat">$0.00</div>
+            <p style="font-size:12px; color:#aaa; margin-top:4px;">Monetization will unlock once eligibility requirements are completed.</p>
           </div>
         </div>
       </div>
 
-      <!-- CUSTOMIZATION -->
+      <!-- 8. STUDIO: COMMENTS -->
+      <div id="sec-comments" class="studio-section hidden">
+        <div class="section-title">Channel Comments</div>
+        <div class="card"><p style="color:#aaa; font-size:13px;">No comments recorded on your published videos yet.</p></div>
+      </div>
+
+      <!-- 9. STUDIO: COPYRIGHT -->
+      <div id="sec-copyright" class="studio-section hidden">
+        <div class="section-title">Copyright Status</div>
+        <div class="card"><p style="color:#2ba640;">✔ You currently have 0 active Copyright Strikes.</p></div>
+      </div>
+
+      <!-- 10. STUDIO: EARN -->
+      <div id="sec-earn" class="studio-section hidden">
+        <div class="section-title">Earn on YouTube</div>
+        <div class="card">
+          <h3>YouTube Partner Program Eligibility</h3>
+          <div style="margin-top: 16px;">
+            <p>Subscribers: <strong id="earnSubCount">0 / 1,000</strong></p>
+            <p style="margin-top: 8px;">Public Watch Hours: <strong id="earnWatchCount">0.0 / 4,000</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 11. STUDIO: CUSTOMIZATION -->
       <div id="sec-customization" class="studio-section hidden">
         <div class="section-title">Channel Customization</div>
         <div class="card">
@@ -394,36 +548,35 @@
               <label>Description</label>
               <textarea id="custDesc" rows="3"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Save Settings</button>
+            <button type="submit" class="btn btn-primary">Publish Changes</button>
           </form>
+        </div>
+      </div>
+
+      <!-- 12. STUDIO: SETTINGS -->
+      <div id="sec-settings" class="studio-section hidden">
+        <div class="section-title">Studio Settings</div>
+        <div class="card">
+          <h3>Permissions</h3>
+          <table>
+            <tr><th>Email</th><th>Role</th></tr>
+            <tr><td id="settingsOwnerEmail">user@gmail.com</td><td>Owner</td></tr>
+          </table>
         </div>
       </div>
 
     </div>
   </div>
 
-  <!-- JAVASCRIPT MASTER LOGIC -->
+  <!-- INSTANT RUNTIME SCRIPT -->
   <script>
-    // --- OPTIONAL FIREBASE CONFIG (Paste your free keys here so other laptops see uploads) ---
-    const firebaseConfig = {
-      apiKey: "YOUR_FIREBASE_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "YOUR_APP_ID"
-    };
-
-    let db = null;
-    if (firebaseConfig.apiKey !== "YOUR_FIREBASE_API_KEY") {
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-    }
-
     const MASTER_EMAIL = "Keshav@gmail.com";
     const MASTER_PASS = "123456789";
 
-    let accountsDB = JSON.parse(localStorage.getItem('vp_accounts')) || [
+    // Instant Media Object Stream Registry
+    const liveStreamBlobs = {};
+
+    let accountsDB = JSON.parse(localStorage.getItem('yt_accounts_v3')) || [
       {
         email: MASTER_EMAIL,
         pass: MASTER_PASS,
@@ -432,7 +585,7 @@
           {
             name: "Keshav Decoded",
             handle: "@KeshavDecoded",
-            desc: "Official Master Control Channel",
+            desc: "Official Master YouTube Channel",
             subscribers: 0,
             subscriptions: [],
             videos: []
@@ -442,50 +595,39 @@
       }
     ];
 
-    let platformVideos = JSON.parse(localStorage.getItem('vp_videos')) || [];
+    let platformVideos = JSON.parse(localStorage.getItem('yt_platform_videos_v3')) || [];
     let activeVideo = null;
     let currentUser = null;
-    let selectedDeviceFileUrl = "";
+    let selectedFileObject = null;
 
     function saveState() {
-      localStorage.setItem('vp_accounts', JSON.stringify(accountsDB));
-      localStorage.setItem('vp_videos', JSON.stringify(platformVideos));
-      
-      if (db) {
-        db.collection("platform").doc("globalData").set({
-          accounts: accountsDB,
-          videos: platformVideos
-        });
-      }
+      localStorage.setItem('yt_accounts_v3', JSON.stringify(accountsDB));
+      localStorage.setItem('yt_platform_videos_v3', JSON.stringify(platformVideos));
     }
 
-    if (db) {
-      db.collection("platform").doc("globalData").onSnapshot(doc => {
-        if (doc.exists) {
-          const data = doc.data();
-          accountsDB = data.accounts || accountsDB;
-          platformVideos = data.videos || platformVideos;
-          updateAllUI();
-          openVidPulseHome();
-        }
-      });
+    function openUploadModal() {
+      selectedFileObject = null;
+      document.getElementById('localVideoFile').value = '';
+      document.getElementById('fileZoneText').innerText = "Select Video File from Computer";
+      document.getElementById('dropZone').classList.remove('active');
+      document.getElementById('upTitle').value = '';
+      document.getElementById('upDesc').value = '';
+      toggleModal('uploadModal', true);
     }
 
-    // Preview File selected from Computer
     function previewSelectedFile(event) {
       const file = event.target.files[0];
       if (file) {
-        selectedDeviceFileUrl = URL.createObjectURL(file);
-        document.getElementById('fileZoneText').innerText = `Selected: ${file.name}`;
-        
-        // Auto fill title if empty
+        selectedFileObject = file;
+        document.getElementById('fileZoneText').innerText = `✅ Selected: ${file.name}`;
+        document.getElementById('dropZone').classList.add('active');
         if (!document.getElementById('upTitle').value) {
           document.getElementById('upTitle').value = file.name.replace(/\.[^/.]+$/, "");
         }
       }
     }
 
-    // Direct Computer File Upload Engine
+    // Instant Upload Pipeline
     function handleVideoUpload(e) {
       e.preventDefault();
       const ch = getCurrentChannel();
@@ -494,34 +636,38 @@
         return;
       }
 
-      if (!selectedDeviceFileUrl) {
-        alert('Please select a video file from your laptop/computer first!');
+      if (!selectedFileObject) {
+        alert('Please select a video file from your computer!');
         return;
       }
 
+      const videoId = "vid_" + Date.now();
+
+      // Create high-speed streaming pointer
+      const streamUrl = URL.createObjectURL(selectedFileObject);
+      liveStreamBlobs[videoId] = streamUrl;
+
       const newVid = {
-        id: "vid_" + Date.now(),
-        title: document.getElementById('upTitle').value,
+        id: videoId,
+        title: document.getElementById('upTitle').value.trim(),
         format: document.getElementById('upType').value,
-        url: selectedDeviceFileUrl, // Streamable Local Video Blob URL
         channelName: ch.name,
         channelHandle: ch.handle,
         views: 0,
         impressions: 10,
-        likedBy: []
+        likedBy: [],
+        injectedLikes: 0,
+        tempUrl: streamUrl
       };
 
       ch.videos.unshift(newVid);
       platformVideos.unshift(newVid);
 
-      // Reset Form State
-      selectedDeviceFileUrl = "";
-      document.getElementById('fileZoneText').innerText = "Click to select video from your Laptop";
-
       saveState();
       toggleModal('uploadModal', false);
       updateAllUI();
-      openVidPulseHome();
+      openYouTubeHome();
+      alert('🎉 Video published instantly! Visible on your Home and Shorts feeds.');
     }
 
     function handleAuth(e) {
@@ -529,11 +675,9 @@
       const email = document.getElementById('authEmail').value.trim();
       const pass = document.getElementById('authPass').value.trim();
 
-      if (email.toLowerCase() === MASTER_EMAIL.toLowerCase()) {
-        if (pass !== MASTER_PASS) {
-          alert('Incorrect Master Admin password!');
-          return;
-        }
+      if (email.toLowerCase() === MASTER_EMAIL.toLowerCase() && pass !== MASTER_PASS) {
+        alert('Incorrect Master Admin password!');
+        return;
       }
 
       let acc = accountsDB.find(a => a.email.toLowerCase() === email.toLowerCase());
@@ -632,7 +776,7 @@
       container.innerHTML += `
         <div class="switch-item" style="border-style:dashed;" onclick="promptAddChannel()">
           <div class="avatar" style="width:28px; height:28px; font-size:12px; background:#272727; color:#fff;">➕</div>
-          <div style="font-weight:bold; font-size:13px; color:#3ea6ff;">Add / Create Another Channel</div>
+          <div style="font-weight:bold; font-size:13px; color:var(--yt-blue);">Add / Create Another Channel</div>
         </div>
       `;
 
@@ -671,15 +815,16 @@
       const ch = getCurrentChannel();
       const char = ch ? ch.name.charAt(0).toUpperCase() : 'U';
       document.getElementById('headerAvatar').innerText = char;
+      document.getElementById('settingsOwnerEmail').innerText = currentUser.email;
 
-      if (currentUser.isMaster) {
+      if (currentUser && currentUser.isMaster) {
         document.getElementById('masterControlBtn').classList.remove('hidden');
       } else {
         document.getElementById('masterControlBtn').classList.add('hidden');
       }
 
       updateAllUI();
-      openVidPulseHome();
+      openYouTubeHome();
     }
 
     function playVideo(vid, isDirectOpen = true) {
@@ -699,7 +844,7 @@
       }
 
       document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById('sec-vpPlayer').classList.remove('hidden');
+      document.getElementById('sec-ytPlayer').classList.remove('hidden');
 
       if (currentUser && currentUser.isMaster) {
         document.getElementById('inPlayerMasterPanel').classList.remove('hidden');
@@ -708,9 +853,10 @@
       }
 
       const player = document.getElementById('activePlayer');
-      if (player.src !== vid.url) {
-        player.src = vid.url;
-        player.play();
+      const streamUrl = liveStreamBlobs[vid.id] || vid.tempUrl || "";
+      if (streamUrl) {
+        player.src = streamUrl;
+        player.play().catch(e => console.log('Autoplay:', e));
       }
 
       document.getElementById('activeVidTitle').innerText = vid.title;
@@ -742,19 +888,37 @@
         subBtn.style.color = "#000";
       }
 
+      const totalLikes = (vid.likedBy ? vid.likedBy.length : 0) + (vid.injectedLikes || 0);
       const likeBtn = document.getElementById('likeBtn');
-      document.getElementById('likeCount').innerText = vid.likedBy.length;
-      if (currentUser && vid.likedBy.includes(currentUser.email)) {
+      document.getElementById('likeCount').innerText = totalLikes;
+      if (currentUser && vid.likedBy && vid.likedBy.includes(currentUser.email)) {
         likeBtn.style.color = "#3ea6ff";
       } else {
         likeBtn.style.color = "#ffffff";
       }
+
+      const relQueue = document.getElementById('relatedQueue');
+      relQueue.innerHTML = '';
+      platformVideos.filter(v => v.id !== vid.id).forEach(v => {
+        relQueue.innerHTML += `
+          <div class="video-card" onclick='playVideo(${JSON.stringify(v)}, true)' style="display:flex; gap:10px;">
+            <div class="video-thumb" style="width:120px; aspect-ratio:16/9; font-size:18px; color:var(--yt-blue);">▶</div>
+            <div>
+              <div class="video-title-text" style="font-size:12px;">${v.title}</div>
+              <div class="video-meta">${v.channelName}</div>
+              <div class="video-meta">${v.views} views</div>
+            </div>
+          </div>
+        `;
+      });
 
       updateAllUI();
     }
 
     function toggleLikeActiveVideo() {
       if (!activeVideo || !currentUser) return;
+      if (!activeVideo.likedBy) activeVideo.likedBy = [];
+      
       const index = activeVideo.likedBy.indexOf(currentUser.email);
       if (index === -1) {
         activeVideo.likedBy.push(currentUser.email);
@@ -814,7 +978,29 @@
 
       saveState();
       playVideo(activeVideo, false);
-      alert(`Successfully added ${count} views to this video!`);
+      alert(`Added ${count} views to this video!`);
+    }
+
+    function injectInPlayerLikes() {
+      if (!activeVideo || !currentUser || !currentUser.isMaster) return;
+      const count = parseInt(document.getElementById('inPlayerAddLikes').value) || 0;
+
+      activeVideo.injectedLikes = (activeVideo.injectedLikes || 0) + count;
+
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(c => {
+            const matchingVid = c.videos.find(v => v.id === activeVideo.id);
+            if (matchingVid) {
+              matchingVid.injectedLikes = (matchingVid.injectedLikes || 0) + count;
+            }
+          });
+        }
+      });
+
+      saveState();
+      playVideo(activeVideo, false);
+      alert(`Added ${count} likes to this video!`);
     }
 
     function injectInPlayerSubs() {
@@ -834,34 +1020,119 @@
         creatorCh.subscribers += count;
         saveState();
         playVideo(activeVideo, false);
-        alert(`Successfully added ${count} subscribers to channel ${creatorCh.name}!`);
+        alert(`Added ${count} subscribers to channel ${creatorCh.name}!`);
       }
     }
 
-    function openVidPulseHome(list = platformVideos) {
+    function openYouTubeHome(list = platformVideos.filter(v => v.format !== 'short')) {
       document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById('sec-vpHome').classList.remove('hidden');
+      document.getElementById('sec-ytHome').classList.remove('hidden');
 
       const grid = document.getElementById('mainHomeGrid');
       grid.innerHTML = '';
 
       if (list.length === 0) {
-        grid.innerHTML = `<p style="color:#aaa; grid-column: 1/-1;">No videos published yet. Upload a video to see it here!</p>`;
+        grid.innerHTML = `<p style="color:#aaa; grid-column: 1/-1; padding: 24px 0;">No videos published yet. Click '➕ Create' to upload your first video!</p>`;
         return;
       }
 
       list.forEach(v => {
         grid.innerHTML += `
           <div class="video-card" onclick='playVideo(${JSON.stringify(v)}, true)'>
-            <video class="video-thumb" src="${v.url}"></video>
+            <div class="video-thumb"><span style="font-size:32px; color:var(--yt-blue);">▶</span></div>
             <div class="video-info">
               <div class="video-title-text">${v.title}</div>
               <div class="video-meta">${v.channelName}</div>
-              <div class="video-meta">${v.views} views</div>
+              <div class="video-meta">${v.views} views • ${(v.likedBy ? v.likedBy.length : 0) + (v.injectedLikes || 0)} likes</div>
             </div>
           </div>
         `;
       });
+    }
+
+    function openShortsFeed() {
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('sec-shorts').classList.remove('hidden');
+
+      const shorts = platformVideos.filter(v => v.format === 'short');
+      const grid = document.getElementById('shortsGrid');
+      grid.innerHTML = '';
+
+      if (shorts.length === 0) {
+        grid.innerHTML = `<p style="color:#aaa; grid-column: 1/-1; padding: 24px 0;">No Shorts published yet. Choose 'Short (Vertical)' format when uploading!</p>`;
+        return;
+      }
+
+      shorts.forEach(v => {
+        grid.innerHTML += `
+          <div class="shorts-card" onclick='playVideo(${JSON.stringify(v)}, true)'>
+            <div style="height:100%; display:flex; flex-direction:column; justify-content:flex-end; padding:12px; background:linear-gradient(0deg, rgba(0,0,0,0.8), transparent);">
+              <div style="font-weight:bold; font-size:13px; margin-bottom:4px;">${v.title}</div>
+              <div style="font-size:11px; color:#aaa;">${v.channelName} • ${v.views} views</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function openPublicChannel() {
+      const ch = getCurrentChannel();
+      if (!ch) return;
+
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById('sec-publicChannel').classList.remove('hidden');
+
+      document.getElementById('pubAvatar').innerText = ch.name.charAt(0).toUpperCase();
+      document.getElementById('pubName').innerText = ch.name;
+      document.getElementById('pubHandle').innerText = `${ch.handle} • ${ch.subscribers} subscribers • ${ch.videos.length} videos`;
+      document.getElementById('pubDesc').innerText = ch.desc;
+
+      const grid = document.getElementById('publicChannelGrid');
+      grid.innerHTML = '';
+      if (ch.videos.length === 0) {
+        grid.innerHTML = `<p style="color:#aaa; grid-column: 1/-1;">This channel has no videos yet.</p>`;
+        return;
+      }
+
+      ch.videos.forEach(v => {
+        grid.innerHTML += `
+          <div class="video-card" onclick='playVideo(${JSON.stringify(v)}, true)'>
+            <div class="video-thumb"><span style="font-size:32px; color:var(--yt-blue);">▶</span></div>
+            <div class="video-info">
+              <div class="video-title-text">${v.title}</div>
+              <div class="video-meta">${v.views} views • ${(v.likedBy ? v.likedBy.length : 0) + (v.injectedLikes || 0)} likes</div>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function switchTab(tabKey, clickedItem) {
+      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(`sec-${tabKey}`).classList.remove('hidden');
+
+      if (clickedItem) {
+        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+        clickedItem.classList.add('active');
+      }
+    }
+
+    function switchAnalyticsSubTab(subKey, clickedItem) {
+      document.querySelectorAll('.an-subview').forEach(v => v.classList.add('hidden'));
+      document.getElementById(`an-${subKey}`).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-tab-item').forEach(i => i.classList.remove('active'));
+      clickedItem.classList.add('active');
+    }
+
+    function executeSearch() {
+      const q = document.getElementById('searchInput').value.toLowerCase().trim();
+      if (!q) {
+        openYouTubeHome();
+        return;
+      }
+      const matches = platformVideos.filter(v => v.title.toLowerCase().includes(q) || v.channelName.toLowerCase().includes(q));
+      openYouTubeHome(matches);
     }
 
     function openMasterPanel() {
@@ -939,7 +1210,32 @@
         saveState();
         loadMasterChannelStats();
         updateAllUI();
-        alert(`Injected ${count} views to ${targetCh.name}!`);
+        alert(`Injected ${count} views to all videos of ${targetCh.name}!`);
+      } else {
+        alert('This channel has no uploaded videos!');
+      }
+    }
+
+    function masterInjectLikes() {
+      const handle = document.getElementById('masterTargetSelect').value;
+      const count = parseInt(document.getElementById('masterAddLikes').value) || 0;
+      let targetCh = null;
+      accountsDB.forEach(a => {
+        if (a.channels) {
+          a.channels.forEach(ch => {
+            if (ch.handle === handle) targetCh = ch;
+          });
+        }
+      });
+
+      if (targetCh && targetCh.videos.length > 0) {
+        targetCh.videos.forEach(v => {
+          v.injectedLikes = (v.injectedLikes || 0) + count;
+        });
+        saveState();
+        loadMasterChannelStats();
+        updateAllUI();
+        alert(`Injected ${count} likes across all videos of ${targetCh.name}!`);
       } else {
         alert('This channel has no uploaded videos!');
       }
@@ -958,7 +1254,7 @@
 
       if (targetCh) {
         toggleModal('masterModal', false);
-        openVidPulseHome(targetCh.videos);
+        openYouTubeHome(targetCh.videos);
       }
     }
 
@@ -966,26 +1262,6 @@
       const el = document.getElementById(id);
       if (show) el.classList.remove('hidden');
       else el.classList.add('hidden');
-    }
-
-    function switchTab(tabKey, clickedItem) {
-      document.querySelectorAll('.studio-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(`sec-${tabKey}`).classList.remove('hidden');
-
-      if (clickedItem) {
-        document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
-        clickedItem.classList.add('active');
-      }
-    }
-
-    function executeSearch() {
-      const q = document.getElementById('searchInput').value.toLowerCase().trim();
-      if (!q) {
-        openVidPulseHome();
-        return;
-      }
-      const matches = platformVideos.filter(v => v.title.toLowerCase().includes(q) || v.channelName.toLowerCase().includes(q));
-      openVidPulseHome(matches);
     }
 
     function updateAllUI() {
@@ -1005,27 +1281,59 @@
 
       document.getElementById('anSubs').innerText = ch.subscribers;
       document.getElementById('anViews').innerText = totalViews;
+      document.getElementById('anWatch').innerText = (totalViews * 0.05).toFixed(1);
       document.getElementById('anImpressions').innerText = totalImpressions;
+
+      const ctr = totalImpressions > 0 ? ((totalViews / totalImpressions) * 100).toFixed(1) : "0.0";
+      document.getElementById('anCTR').innerText = ctr + "%";
+      document.getElementById('anUnique').innerText = totalViews;
+
+      if (totalViews > 0) {
+        document.getElementById('realtimeStatus').innerText = `● Updating Live: ${totalViews} total views recorded in the last 48 hours.`;
+        document.getElementById('tsSearch').innerText = "55%";
+        document.getElementById('tsBrowse').innerText = "35%";
+        document.getElementById('tsSuggested').innerText = "10%";
+        document.getElementById('anAVD').innerText = "3:10";
+        document.getElementById('anAPV').innerText = "68%";
+        document.getElementById('retIntro').innerText = "74%";
+        document.getElementById('retTop').innerText = "0:30 - 2:45";
+        document.getElementById('audNew').innerText = totalViews;
+      } else {
+        document.getElementById('realtimeStatus').innerText = "No live activity recorded yet.";
+        document.getElementById('tsSearch').innerText = "0%";
+        document.getElementById('tsBrowse').innerText = "0%";
+        document.getElementById('tsSuggested').innerText = "0%";
+        document.getElementById('anAVD').innerText = "0:00";
+        document.getElementById('anAPV').innerText = "0%";
+        document.getElementById('retIntro').innerText = "0%";
+        document.getElementById('retTop').innerText = "No data";
+        document.getElementById('audNew').innerText = "0";
+      }
+
+      document.getElementById('earnSubCount').innerText = `${ch.subscribers} / 1,000`;
+      document.getElementById('earnWatchCount').innerText = `${(totalViews * 0.05).toFixed(1)} / 4,000`;
 
       if (ch.videos.length > 0) {
         const latest = ch.videos[0];
         document.getElementById('latestVidName').innerText = latest.title;
         document.getElementById('latestVidViews').innerText = latest.views;
-        document.getElementById('latestVidLikes').innerText = latest.likedBy.length;
+        document.getElementById('latestVidLikes').innerText = (latest.likedBy ? latest.likedBy.length : 0) + (latest.injectedLikes || 0);
+        document.getElementById('latestVidCTR').innerText = latest.impressions > 0 ? ((latest.views / latest.impressions) * 100).toFixed(1) + "%" : "0%";
       }
 
       const tbody = document.getElementById('contentTableBody');
       tbody.innerHTML = '';
       if (ch.videos.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#aaa;">No videos uploaded yet.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#aaa;">No videos uploaded yet.</td></tr>`;
       } else {
         ch.videos.forEach(v => {
           tbody.innerHTML += `
             <tr>
               <td><strong>${v.title}</strong></td>
-              <td><span style="background:#383838; padding:2px 6px; border-radius:4px; font-size:10px;">${v.format.toUpperCase()}</span></td>
+              <td><span class="badge">${v.format.toUpperCase()}</span></td>
+              <td>Public</td>
               <td>${v.views}</td>
-              <td>${v.likedBy.length}</td>
+              <td>${(v.likedBy ? v.likedBy.length : 0) + (v.injectedLikes || 0)}</td>
               <td><button class="btn btn-danger" onclick="deleteVideo('${v.id}')" style="padding: 3px 8px; font-size:11px;">Delete</button></td>
             </tr>
           `;
@@ -1039,8 +1347,10 @@
       ch.videos = ch.videos.filter(v => v.id !== id);
       const pIndex = platformVideos.findIndex(v => v.id === id);
       if (pIndex !== -1) platformVideos.splice(pIndex, 1);
+      delete liveStreamBlobs[id];
       saveState();
       updateAllUI();
+      openYouTubeHome();
     }
 
     function saveCustomization(e) {
@@ -1072,7 +1382,7 @@
       curCh.desc = document.getElementById('custDesc').value;
       saveState();
       updateAllUI();
-      alert('Channel settings updated successfully!');
+      alert('Channel settings saved successfully!');
     }
   </script>
 </body>
